@@ -58,8 +58,6 @@ class StaticGenerator(object):
         self.resources = self.extract_resources(resources)
         self.server_name = self.get_server_name()
         
-        print self.url_func
-        
         try:
             self.web_root = getattr(settings, 'WEB_ROOT')
         except AttributeError:
