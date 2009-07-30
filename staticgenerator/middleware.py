@@ -4,7 +4,9 @@ from staticgenerator import StaticGenerator
 
 class StaticGeneratorMiddleware(object):
     """
-    This requires settings.STATIC_GENERATOR_URLS tuple to match on URLs
+    This requires settings.STATIC_GENERATOR_URLS tuple to match on URLs.
+    This fork uses the requests incoming host header to allow multiple site
+    static generation.
     
     Example::
         
@@ -21,6 +23,6 @@ class StaticGeneratorMiddleware(object):
         if response.status_code == 200:
             for url in self.urls:
                 if url.match(request.path_info):
-                    self.gen.publish_from_path(request.path_info, response.content)
+                    self.gen.publish_from_path('%s%s'%(request.get_host(), request.path), response.content)
                     break
         return response

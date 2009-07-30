@@ -50,8 +50,16 @@ class StaticGenerator(object):
     """
     
     def __init__(self, *resources):
+        try:
+            self.url_func = getattr(settings, 'STATIC_URL_FUNC')
+        except AttributeError:
+            self.url_func = "get_absolute_url"
+            
         self.resources = self.extract_resources(resources)
         self.server_name = self.get_server_name()
+        
+        print self.url_func
+        
         try:
             self.web_root = getattr(settings, 'WEB_ROOT')
         except AttributeError:
@@ -69,7 +77,7 @@ class StaticGenerator(object):
             
             # A model instance; requires get_absolute_url method
             if isinstance(resource, Model):
-                extracted.append(resource.get_absolute_url())
+                extracted.append(resource.__getattribute__(self.url_func)())
                 continue
             
             # If it's a Model, we get the base Manager
@@ -82,7 +90,7 @@ class StaticGenerator(object):
             
             # Append all paths from obj.get_absolute_url() to list
             if isinstance(resource, QuerySet):
-                extracted += [obj.get_absolute_url() for obj in resource]
+                extracted += [obj.__getattribute__(self.url_func)() for obj in resource]
         
         return extracted
         

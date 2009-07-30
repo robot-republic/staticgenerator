@@ -38,7 +38,11 @@ Second, add the Middleware to `MIDDLEWARE_CLASSES`:
         'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
         ...snip...
     )
-    
+
+Lastly if you want staticgenerator to use a URL for your models other than "get_absolute_url" add the setting attribute `STATIC_URL_FUNC`:
+
+    STATIC_URL_FUNC = 'get_staticgen_url'
+
 **Note**: You must place the StaticGeneratorMiddleware before FlatpageFallbackMiddleware if you use it.
     
 When the pages are accessed for the first time, the body of the page is saved into a static file. This is completely transparent to the end-user. When the page or an associated object has changed, simply delete the cached file (See notes on Signals).
