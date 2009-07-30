@@ -104,7 +104,7 @@ class StaticGenerator(object):
             from django.contrib.sites.models import Site
             return Site.objects.get_current().domain
         except:
-            print '*** Warning ***: Using "localhost" for domain name. Use django.contrib.sites or set settings.SERVER_NAME to disable this warning.'
+            #print '*** Warning ***: Using "localhost" for domain name. Use django.contrib.sites or set settings.SERVER_NAME to disable this warning.'
             return 'localhost'
     
     def get_content_from_path(self, path):
