@@ -20,8 +20,6 @@ class StaticGeneratorMiddleware(object):
     gen = StaticGenerator()
     
     def process_response(self, request, response):
-        if getattr(settings, 'STATIC_GENERATOR_ANON_ONLY', True) == True and request.user.is_authenticated():
-            return response
         if response.status_code == 200:
             for url in self.urls:
                 if url.match(request.path_info):
