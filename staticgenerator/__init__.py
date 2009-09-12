@@ -2,6 +2,7 @@
 import os
 import stat
 import tempfile
+import gzip
 from django.http import HttpRequest
 from django.core.handlers.base import BaseHandler
 from django.db.models.base import ModelBase
@@ -130,7 +131,7 @@ class StaticGenerator(object):
             path = '%sindex.html' % path
             
         fn = os.path.join(self.web_root, path.lstrip('/')).encode('utf-8')
-        return fn, os.path.dirname(fn)
+        return fn, os.path.dirname(fn), '%s.gz' % fn
         
     def publish_from_path(self, path, content=None):
         """
@@ -138,7 +139,8 @@ class StaticGenerator(object):
         necessary, writes to file.
         
         """
-        fn, directory = self.get_filename_from_path(path)
+        fn, directory, fngz = self.get_filename_from_path(path)
+        
         if not content:
             content = self.get_content_from_path(path)
         
@@ -154,19 +156,28 @@ class StaticGenerator(object):
             os.close(f)
             os.chmod(tmpname, stat.S_IREAD | stat.S_IWRITE | stat.S_IWUSR | stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
             os.rename(tmpname, fn)
-            
+            try:
+                tmpnamegz = '%s.gz' % tmpname
+                f = gzip.open(tmpnamegz, 'wb')
+                f.write(content)
+                f.close()
+                os.chmod(tmpnamegz, stat.S_IREAD | stat.S_IWRITE | stat.S_IWUSR | stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH)
+                os.rename(tmpnamegz, fngz)
+            except:
+                raise StaticGeneratorException('Could not create the file: %s' % fngz)
         except:
             raise StaticGeneratorException('Could not create the file: %s' % fn)
             
     def delete_from_path(self, path):
         """Deletes file, attempts to delete directory"""
-        fn, directory = self.get_filename_from_path(path)
-        try:
-            if os.path.exists(fn):
-                os.remove(fn)
-        except:
-            raise StaticGeneratorException('Could not delete file: %s' % fn)
-            
+        fn, directory, fngz = self.get_filename_from_path(path)
+        for filename in (fn, fngz):
+            try:
+                if os.path.exists(filename):
+                    os.remove(filename)
+            except:
+                raise StaticGeneratorException('Could not delete file: %s' % filename)
+        
         try:
             os.rmdir(directory)
         except OSError:
