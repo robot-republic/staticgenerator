@@ -103,6 +103,7 @@ class StaticGenerator(object):
             from django.contrib.sites.models import Site
             return Site.objects.get_current().domain
         except:
+            # Removed b/c of wsgi
             #print '*** Warning ***: Using "localhost" for domain name. Use django.contrib.sites or set settings.SERVER_NAME to disable this warning.'
             return 'localhost'
     
