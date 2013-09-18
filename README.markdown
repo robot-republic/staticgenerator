@@ -39,13 +39,29 @@ Second, add the Middleware to `MIDDLEWARE_CLASSES`:
         ...snip...
     )
 
+**Note**: You must place the StaticGeneratorMiddleware before FlatpageFallbackMiddleware if you use it.
+
+When the pages are accessed for the first time, the body of the page is saved into a static file. This is completely transparent to the end-user. When the page or an associated object has changed, simply delete the cached file (See notes on Signals).
+
 Lastly if you want staticgenerator to use a URL for your models other than "get_absolute_url" add the setting attribute `STATIC_URL_FUNC`:
 
     STATIC_URL_FUNC = 'get_staticgen_url'
-
-**Note**: You must place the StaticGeneratorMiddleware before FlatpageFallbackMiddleware if you use it.
     
-When the pages are accessed for the first time, the body of the page is saved into a static file. This is completely transparent to the end-user. When the page or an associated object has changed, simply delete the cached file (See notes on Signals).
+#### Generating static content on a per-request basis
+
+Sometimes you need more granular control when deciding which pages should be cached than `STATIC_GENERATOR_URLS` allows. For example, you might need to consider some session variable, or an attribute based on your models, etc. In cases like this you can specify a function that will indicate whether a request/response should be cached.
+
+For example, if you have a CMS that allows clients to create public or private Pages, you can't know all the possible URLs they might want excluded. Instead, you'd specify your function path in setting.py:
+
+    STATIC_GENERATOR_REQUEST_PROCESSOR = 'myapp.staticgen.should_cache_page'
+    
+In `myapp/staticgen.py` you'd define a function like:
+
+    def should_cache_page(request, response):
+      page = Page.objects.get(url=request.path)
+      return page.is_public()
+      
+The function will be passed both the request and response, and should return True or False.
 
 ### Method 2: Generate on Save
 
